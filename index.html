@@ -561,13 +561,13 @@ function renderHome(){
         <span class="crown">👑</span>
         <span class="btxt">
           <b>끝판왕${bCleared?' ✓':''}</b>
-          <span>${bOpen?'Lv.6 · 최고난도 10문제':`Lv.5 만점 ${p}/${PERFECT_GOAL} · 3회 만점이면 열려요`}</span>
+          <span>${bOpen?'Lv.6 · 최고난도 10문제':`Lv.5 만점 ${p}/${PERFECT_GOAL}회 저장됨 · ${PERFECT_GOAL-p}번 더 만점 시 해금`}</span>
         </span>
         <span class="pips">${[0,1,2].map(i=>`<i class="${i<p?'on':''}"></i>`).join('')}</span>
       </button>
       <div class="unit-cta">
-        <button class="btn primary" data-unit="${u.id}" data-level="${next}">
-          ${allDone ? `Lv.${mainN} 다시 풀기` : `Lv.${next} 시작하기`}
+        <button class="btn primary" data-unit="${u.id}" data-level="${(allDone && bOpen) ? BOSS_LEVEL : next}">
+          ${allDone ? (bOpen ? '👑 끝판왕 도전하기' : `Lv.${mainN} ${['첫','두','세'][p] || (p+1)} 번째 도전하기 (${p}/${PERFECT_GOAL})`) : `Lv.${next} 시작하기`}
         </button>
       </div>`;
     card.querySelectorAll('[data-level]').forEach(b=>{
@@ -815,21 +815,28 @@ function finish(){
 
   const nextLevelOpen = s.mode === 'level' && !s.isBoss && s.level < BOSS_LEVEL - 1 && levelUnlocked(u, s.level + 1);
 
+  const pNow = u ? perfectCount(u) : 0;
+  const retryLabel = s.mode !== 'level'
+    ? '남은 오답 풀기'
+    : (s.level === 5 && !bossUnlocked(u))
+      ? `Lv.5 ${['첫','두','세'][pNow] || (pNow+1)} 번째 도전하기`
+      : '다시 풀기';
+
   card.innerHTML = `
     <div class="res-ctx">${ctx}</div>
     <div class="big">${emoji}</div>
     <h2>${title}</h2>
     <p class="sub">${sub}</p>
     <div class="score"><b>${correct}</b><span>/ ${total}</span></div>
-    ${(s.mode==='level' && s.level===5 && !bossOpened) ? `<div class="bossline">👑 Lv.5 만점 <b>${perfectCount(u)}/${PERFECT_GOAL}</b>${perfectUp?' · 기록 저장됨':''}${bossCleared?'':''}</div>` : ''}
+    ${(s.mode==='level' && s.level===5 && !bossOpened) ? `<div class="bossline">👑 Lv.5 만점 <b>${pNow}/${PERFECT_GOAL}회</b> 저장됨${perfectUp?' · 방금 기록됨':''}</div>` : ''}
     ${leveledUp ? `<div class="lvup">🔓 레벨업! Lv.${s.level + 1} 「${levelTitle(u, s.level + 1)}」이 열렸어요</div>` : ''}
     ${bossOpened ? `<div class="lvup gold">👑 끝판왕이 열렸어요! Lv.5 만점 ${PERFECT_GOAL}회 달성</div>` : ''}
     ${(s.isBoss && bossCleared) ? `<div class="lvup gold">👑 이 단원의 끝판왕을 통과했어요</div>` : ''}
     <div class="actions">
       ${bossOpened ? `<button class="btn gold" id="res-boss">👑 끝판왕 도전하기</button>` : ''}
-      ${nextLevelOpen ? `<button class="btn primary" id="res-next-level">Lv.${s.level+1} 도전하기</button>` : ''}
+      ${nextLevelOpen ? `<button class="btn primary" id="res-next-level">다음 단계 (Lv.${s.level+1}) 도전하기</button>` : ''}
       <div class="row">
-        <button class="btn ${(nextLevelOpen || bossOpened) ? 'ghost' : 'primary'}" id="res-retry">${s.mode==='level'?'다시 풀기':'남은 오답 풀기'}</button>
+        <button class="btn ${(nextLevelOpen || bossOpened) ? 'ghost' : 'primary'}" id="res-retry">${retryLabel}</button>
         <button class="btn ghost" id="res-home">홈으로</button>
       </div>
       ${wrongLeft ? `<button class="btn soft" id="res-review">오답 다시 풀기 (${wrongLeft})</button>` : ''}
