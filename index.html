@@ -566,7 +566,7 @@ function renderHome(){
         <span class="pips">${[0,1,2].map(i=>`<i class="${i<p?'on':''}"></i>`).join('')}</span>
       </button>
       <div class="unit-cta">
-        <button class="btn primary" data-unit="${u.id}" data-level="${(allDone && bOpen) ? BOSS_LEVEL : next}">
+        <button class="btn primary" data-unit="${u.id}" data-level="${allDone ? (bOpen ? BOSS_LEVEL : mainN) : next}">
           ${allDone ? (bOpen ? '👑 끝판왕 도전하기' : `Lv.${mainN} ${['첫','두','세'][p] || (p+1)} 번째 도전하기 (${p}/${PERFECT_GOAL})`) : `Lv.${next} 시작하기`}
         </button>
       </div>`;
